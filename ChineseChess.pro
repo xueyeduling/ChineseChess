@@ -1,15 +1,24 @@
 SOURCES += \
     main.cpp \
-    plate.cpp \
-    piece.cpp \
-    ai.cpp
+    AI.cpp \
+    Piece.cpp \
+    Plate.cpp \
+    NetGame.cpp \
+    Step.cpp \
+    ChooseDlg.cpp
 
 QT += widgets gui
+QT += network
+LIBS += -lWs2_32
+RC_FILE = icon.rc
 
 HEADERS += \
-    plate.h \
-    piece.h \
-    ai.h
+    AI.h \
+    Piece.h \
+    Plate.h \
+    NetGame.h \
+    Step.h \
+    ChooseDlg.h
 
 RESOURCES += \
     ret.qrc

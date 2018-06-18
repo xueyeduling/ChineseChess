@@ -1,5 +1,4 @@
-#include "ai.h"
-
+#include "AI.h"
 #define KINGVALUE 1000
 
 //Rooks,Mao,Elephants,Mandarins,King,Pao,Pawns
@@ -8,9 +7,9 @@
 #define INFINITE 10000
 #define LEAVEL 4
 
-AI::AI()
+AI::AI(QWidget *parent):Plate(parent)
 {
-
+    isRed = true;
 }
 
 // 获取对方走棋后的局面最小值
@@ -31,7 +30,7 @@ int AI::getMinScore(int level, int curBest)
         step= *beg;
 
         // 移动
-        p->move(step->moveId,step->killId, step->targetRow, step->targetCol);
+        move(step->moveId,step->killId, step->targetRow, step->targetCol);
 
         // 评估
         //int value = eval();
@@ -41,14 +40,14 @@ int AI::getMinScore(int level, int curBest)
         {
             // 先获取最小值，然后返回
             minValue = eval();
-            p->moveBack();
+            moveBack();
             break;
         }
 
         int value = getMaxScore(level - 1, minValue);
 
         // 返回
-        p->moveBack();
+        moveBack();
 
         // 如果小于传入的值，立即返回
         if(value <= curBest)
@@ -86,7 +85,7 @@ int AI::getMaxScore(int level, int curBest)
         step= *beg;
 
         // 移动
-        p->move(step->moveId,step->killId, step->targetRow, step->targetCol);
+        move(step->moveId,step->killId, step->targetRow, step->targetCol);
 
         // 评估
         //int value = eval();
@@ -96,14 +95,14 @@ int AI::getMaxScore(int level, int curBest)
         {
             // 先获取最大值，然后返回
             maxValue = eval();
-            p->moveBack();
+            moveBack();
             break;
         }
 
         int value = getMinScore(level - 1, maxValue);
 
         // 返回
-        p->moveBack();
+        moveBack();
 
         // 如果大于传入的值，立即返回
         if(value >= curBest)
@@ -126,17 +125,17 @@ int AI::getMaxScore(int level, int curBest)
 // 添加步骤
 bool AI::addSteps(int moveid, int targetRow, int targetCol, QList<Step *> &steps)
 {
-    int killid = p->ps[targetRow][targetCol];
-    if(killid != -1 && p->pieces[killid].isBlack() == p->pieces[moveid].isBlack())
+    int killid = ps[targetRow][targetCol];
+    if(killid != -1 && pieces[killid].isBlack() == pieces[moveid].isBlack())
         return false;
-    if(!p->canMove(moveid, killid, targetRow, targetCol))
+    if(!canMove(moveid, killid, targetRow, targetCol))
         return false;
 
     Step *step = new Step;
     step->moveId = moveid;
     step->killId = killid;
-    step->moveRow = p->pieces[moveid].row;
-    step->moveCol = p->pieces[moveid].col;
+    step->moveRow = pieces[moveid].row;
+    step->moveCol = pieces[moveid].col;
     step->targetRow = targetRow;
     step->targetCol = targetCol;
 
@@ -161,7 +160,7 @@ Step *AI::getNextStep()
         step= *beg;
 
         // 移动
-        p->move(step->moveId,step->killId, step->targetRow, step->targetCol);
+        move(step->moveId,step->killId, step->targetRow, step->targetCol);
 
         // 评估
         //int value = eval();
@@ -171,7 +170,7 @@ Step *AI::getNextStep()
         {
             // 返回
             maxValue = eval();
-            p->moveBack();
+            moveBack();
             if(best) delete best;
             best = step;
             while(++beg != steps.end())
@@ -182,7 +181,7 @@ Step *AI::getNextStep()
         int value = getMinScore(LEAVEL - 1, maxValue);
 
         // 返回
-        p->moveBack();
+        moveBack();
         if(value > maxValue)
         {
             if(best) delete best;
@@ -194,9 +193,9 @@ Step *AI::getNextStep()
     }
 
     if(maxValue <= -KINGVALUE)
-        p->isWin = 1;
+        isWin = 1;
     if(maxValue >= KINGVALUE)
-        p->isWin = -1;
+        isWin = -1;
 
     // 记录分数最大的走法，返回这个走法
     return best;
@@ -205,22 +204,6 @@ Step *AI::getNextStep()
 // 局面评估
 int AI::eval()
 {
-    /*
-    int blackScore = 0;
-    int redScore = 0;
-
-    // 存活的黑棋分数
-    for(int i = 0; i < 16; ++i)
-        if(!p->pieces[i].killed)
-            blackScore += score[p->pieces[i].type];
-
-    // 存活的红棋分数
-    for(int i = 16; i < 32; ++i)
-        if(!p->pieces[i].killed)
-            redScore += score[p->pieces[i].type];
-
-    return blackScore - redScore;
-    */
     return countValue;
 }
 
@@ -229,18 +212,18 @@ int AI::eval()
 void AI::getAllPossibleMove(QList<Step *> &steps)
 {
     int min = 0, max = 16;
-    if(p->redTure)
+    if(redTure)
         min = 16, max = 32;
     for(int moveid = min; moveid < max; ++moveid)
     {
-        // bool color = p->pieces[moveid].isBlack();
-        if(p->pieces[moveid].killed) continue;
+        // bool color = pieces[moveid].isBlack();
+        if(pieces[moveid].killed) continue;
 
         // 车
-        if(p->pieces[moveid].type == Rooks)
+        if(pieces[moveid].type == Rooks)
         {
-            int rowFrom = p->pieces[moveid].row;
-            int colFrom = p->pieces[moveid].col;
+            int rowFrom = pieces[moveid].row;
+            int colFrom = pieces[moveid].col;
 
             // 向左走
             for(int col = colFrom - 1; col >= 0 ; --col)
@@ -268,10 +251,10 @@ void AI::getAllPossibleMove(QList<Step *> &steps)
             }
         }
         // 马
-        else if(p->pieces[moveid].type == Mao)
+        else if(pieces[moveid].type == Mao)
         {
-            int rowFrom = p->pieces[moveid].row;
-            int colFrom = p->pieces[moveid].col;
+            int rowFrom = pieces[moveid].row;
+            int colFrom = pieces[moveid].col;
 
             // 辅助数据结构，表示相对位移量
             struct {
@@ -299,10 +282,10 @@ void AI::getAllPossibleMove(QList<Step *> &steps)
             }
         }
         // 象
-        else if(p->pieces[moveid].type == Elephants)
+        else if(pieces[moveid].type == Elephants)
         {
-            int rowFrom = p->pieces[moveid].row;
-            int colFrom = p->pieces[moveid].col;
+            int rowFrom = pieces[moveid].row;
+            int colFrom = pieces[moveid].col;
 
             // 辅助数据结构，表示相对位移量
             struct {
@@ -326,10 +309,10 @@ void AI::getAllPossibleMove(QList<Step *> &steps)
             }
         }
         // 士
-        else if(p->pieces[moveid].type == Mandarins)
+        else if(pieces[moveid].type == Mandarins)
         {
-            int rowFrom = p->pieces[moveid].row;
-            int colFrom = p->pieces[moveid].col;
+            int rowFrom = pieces[moveid].row;
+            int colFrom = pieces[moveid].col;
 
             // 辅助数据结构，表示相对位移量
             struct {
@@ -353,10 +336,10 @@ void AI::getAllPossibleMove(QList<Step *> &steps)
             }
         }
         // 王
-        else if(p->pieces[moveid].type == King)
+        else if(pieces[moveid].type == King)
         {
-            int rowFrom = p->pieces[moveid].row;
-            int colFrom = p->pieces[moveid].col;
+            int rowFrom = pieces[moveid].row;
+            int colFrom = pieces[moveid].col;
 
             // 辅助数据结构，表示相对位移量
             struct {
@@ -380,10 +363,10 @@ void AI::getAllPossibleMove(QList<Step *> &steps)
             }
         }
         // 炮
-        else if(p->pieces[moveid].type == Pao)
+        else if(pieces[moveid].type == Pao)
         {
-            int rowFrom = p->pieces[moveid].row;
-            int colFrom = p->pieces[moveid].col;
+            int rowFrom = pieces[moveid].row;
+            int colFrom = pieces[moveid].col;
 
             // 向左走
             for(int col = colFrom - 1; col >= 0 ; --col)
@@ -407,10 +390,10 @@ void AI::getAllPossibleMove(QList<Step *> &steps)
             }
         }
         // 兵
-        else if(p->pieces[moveid].type == Pawns)
+        else if(pieces[moveid].type == Pawns)
         {
-            int rowFrom = p->pieces[moveid].row;
-            int colFrom = p->pieces[moveid].col;
+            int rowFrom = pieces[moveid].row;
+            int colFrom = pieces[moveid].col;
 
             // 辅助数据结构，表示相对位移量
             struct {
@@ -435,3 +418,51 @@ void AI::getAllPossibleMove(QList<Step *> &steps)
         }
     }
 }
+
+void AI::click(int clickid, int row, int col)
+{
+    Plate::click(clickid, row, col);
+
+    QTimer::singleShot(100, [&](){ // 启用0.1秒计时器，0.1秒后，电脑再思考
+            if(!redTure)
+            {
+                otherMove();
+            }
+        });
+}
+
+// 移动棋子
+void AI::otherMove()
+{
+    Step *step = getNextStep();
+    if(isWin == 1)
+    {
+        delete step;
+        /*QMessageBox message(QMessageBox::NoIcon, "Title", "Content with icon.");
+                    message.setIconPixmap(QPixmap("icon.png"));
+                    message.exec();*/
+        QMessageBox::about(this, "胜利", "胜利      ");
+        return;
+    }
+    move(step->moveId, step->killId, step->targetRow, step->targetCol);
+    update();
+    if(isWin == -1)
+    {
+        /*QMessageBox message(QMessageBox::NoIcon, "Title", "Content with icon.");
+                    message.setIconPixmap(QPixmap("icon.png"));
+                    message.exec();*/
+        QMessageBox::about(this, "失败", "失败      ");
+        //QMessageBox::information(NULL, "失败", "失败");
+    }
+    delete step;
+}
+
+// 统计分数
+void AI::AddUpValue(bool isBack, int value)
+{
+    if(!isBack)
+        countValue += value;
+    else
+        countValue -= value;
+}
+

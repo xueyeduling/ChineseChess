@@ -1,4 +1,4 @@
-#include "piece.h"
+#include "Piece.h"
 
 Piece::Piece(QObject *parent) : QObject(parent)
 {
@@ -67,4 +67,10 @@ void Piece::draw(QPainter &p, int d, int selectid)
     default:
         break;
     }
+}
+
+void Piece::rotate()
+{
+    this->col = 8-this->col;
+    this->row = 9-this->row;
 }
