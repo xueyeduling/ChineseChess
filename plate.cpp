@@ -1,14 +1,13 @@
-#include "plate.h"
-#include "ai.h"
-#include <qtimer.h>
+#include "Plate.h"
 
 //Rooks,Mao,Elephants,Mandarins,King,Pao,Pawns
 static int score[] = {90, 45, 25, 25, 2000, 50, 10};
 
-Plate::Plate(QWidget *parent) : QWidget(parent)
+Plate::Plate(QWidget *parent) : QDialog(parent)
 {
-    ai = new AI;
-    ai->p = this;
+    gametype = Choose;
+
+    isRed = true;
 
     this->setWindowIcon(QIcon(":/Img/log.png"));
     this->setWindowTitle("中国象棋");
@@ -38,29 +37,106 @@ void Plate::paintEvent(QPaintEvent *event)
     pen.setWidth(2);//改变线宽
     p.setPen(pen);
 
-    // 悔棋button
-    p.setPen(Qt::NoPen); // 不要画笔(没边框)
-    // 背景颜色：能悔棋是绿色，不能悔棋是灰色
-    p.setBrush(QBrush(listStep.isEmpty()?QColor(Qt::gray):QColor(Qt::darkGreen)));
-    QRect rcBtn = QRect(QPoint(500, 100), QPoint(680, 160));
-    p.drawRoundRect(rcBtn, 20, 50);
-    // 字体颜色：能悔棋是白色，不能悔棋是黑色
-    p.setPen(QPen(listStep.isEmpty()?Qt::black:Qt::white));
-    p.setFont(QFont("楷体", d/2 - 16, QFont::DemiBold )); // -10让字体变小一点, QFont::DemiBold为半粗体(权重是63)
-    p.drawText(rcBtn, "悔  棋", QTextOption(Qt::AlignCenter));
+    // x轴-50，使棋盘向左偏移一点
+    p.translate(QPoint(-50, 0));
 
-    // 重新开始button
-    p.setPen(Qt::NoPen); // 不要画笔(没边框)
-    // 背景颜色：能悔棋是绿色，不能悔棋是灰色
-    p.setBrush(QBrush(QColor(Qt::darkGreen)));
-    rcBtn = QRect(QPoint(500, 200), QPoint(680, 260));
-    p.drawRoundRect(rcBtn, 20, 50);
-    // 字体颜色：能悔棋是白色，不能悔棋是黑色
-    p.setPen(QPen(Qt::white));
-    p.setFont(QFont("楷体", d/2 - 16, QFont::DemiBold )); // -10让字体变小一点, QFont::DemiBold为半粗体(权重是63)
-    p.drawText(rcBtn, "重新开始", QTextOption(Qt::AlignCenter));
-    // 字体颜色恢复黑色，用于画线
-    p.setPen(QPen(Qt::black));
+    if(gametype == Single)
+    {
+        // 悔棋button
+        p.setPen(Qt::NoPen); // 不要画笔(没边框)
+        // 背景颜色：能悔棋是绿色，不能悔棋是灰色
+        p.setBrush(QBrush(listStep.isEmpty()?QColor(Qt::gray):QColor(Qt::darkGreen)));
+        QRect rcBtn = QRect(QPoint(500, 100), QPoint(680, 160));
+        p.drawRoundRect(rcBtn, 20, 50);
+        // 字体颜色：能悔棋是白色，不能悔棋是黑色
+        p.setPen(QPen(listStep.isEmpty()?Qt::black:Qt::white));
+        p.setFont(QFont("楷体", d/2 - 16, QFont::DemiBold )); // -10让字体变小一点, QFont::DemiBold为半粗体(权重是63)
+        p.drawText(rcBtn, "悔  棋", QTextOption(Qt::AlignCenter));
+
+        // 重新开始button
+        p.setPen(Qt::NoPen); // 不要画笔(没边框)
+        // 背景颜色：能悔棋是绿色，不能悔棋是灰色
+        p.setBrush(QBrush(QColor(Qt::darkGreen)));
+        rcBtn = QRect(QPoint(500, 200), QPoint(680, 260));
+        p.drawRoundRect(rcBtn, 20, 50);
+        // 字体颜色：能悔棋是白色，不能悔棋是黑色
+        p.setPen(QPen(Qt::white));
+        p.setFont(QFont("楷体", d/2 - 16, QFont::DemiBold )); // -10让字体变小一点, QFont::DemiBold为半粗体(权重是63)
+        p.drawText(rcBtn, "重新开始", QTextOption(Qt::AlignCenter));
+        // 字体颜色恢复黑色，用于画线
+        p.setPen(QPen(Qt::black));
+
+        // 重新开始button
+        p.setPen(Qt::NoPen); // 不要画笔(没边框)
+        // 背景颜色：能悔棋是绿色，不能悔棋是灰色
+        p.setBrush(QBrush(QColor(Qt::darkGreen)));
+        rcBtn = QRect(QPoint(500, 300), QPoint(680, 360));
+        p.drawRoundRect(rcBtn, 20, 50);
+        // 字体颜色：能悔棋是白色，不能悔棋是黑色
+        p.setPen(QPen(Qt::white));
+        p.setFont(QFont("楷体", d/2 - 16, QFont::DemiBold )); // -10让字体变小一点, QFont::DemiBold为半粗体(权重是63)
+        p.drawText(rcBtn, "返回菜单", QTextOption(Qt::AlignCenter));
+        // 字体颜色恢复黑色，用于画线
+        p.setPen(QPen(Qt::black));
+    }
+    else
+    {
+        // y轴-50，使棋盘向上偏移一点
+        p.translate(QPoint(0, -50));
+
+        // 悔棋button
+        p.setPen(Qt::NoPen); // 不要画笔(没边框)
+        // 背景颜色：能悔棋是绿色，不能悔棋是灰色
+        p.setBrush(QBrush(listStep.isEmpty()?QColor(Qt::gray):QColor(Qt::darkGreen)));
+        QRect rcBtn = QRect(QPoint(500, 100), QPoint(680, 160));
+        p.drawRoundRect(rcBtn, 20, 50);
+        // 字体颜色：能悔棋是白色，不能悔棋是黑色
+        p.setPen(QPen(listStep.isEmpty()?Qt::black:Qt::white));
+        p.setFont(QFont("楷体", d/2 - 16, QFont::DemiBold )); // -10让字体变小一点, QFont::DemiBold为半粗体(权重是63)
+        p.drawText(rcBtn, "悔  棋", QTextOption(Qt::AlignCenter));
+
+        // 重新开始button
+        p.setPen(Qt::NoPen); // 不要画笔(没边框)
+        // 背景颜色：能悔棋是绿色，不能悔棋是灰色
+        p.setBrush(QBrush(QColor(Qt::darkGreen)));
+        rcBtn = QRect(QPoint(500, 200), QPoint(680, 260));
+        p.drawRoundRect(rcBtn, 20, 50);
+        // 字体颜色：能悔棋是白色，不能悔棋是黑色
+        p.setPen(QPen(Qt::white));
+        p.setFont(QFont("楷体", d/2 - 16, QFont::DemiBold )); // -10让字体变小一点, QFont::DemiBold为半粗体(权重是63)
+        p.drawText(rcBtn, "求 和", QTextOption(Qt::AlignCenter));
+        // 字体颜色恢复黑色，用于画线
+        p.setPen(QPen(Qt::black));
+
+        // 重新开始button
+        p.setPen(Qt::NoPen); // 不要画笔(没边框)
+        // 背景颜色：能悔棋是绿色，不能悔棋是灰色
+        p.setBrush(QBrush(QColor(Qt::darkGreen)));
+        rcBtn = QRect(QPoint(500, 300), QPoint(680, 360));
+        p.drawRoundRect(rcBtn, 20, 50);
+        // 字体颜色：能悔棋是白色，不能悔棋是黑色
+        p.setPen(QPen(Qt::white));
+        p.setFont(QFont("楷体", d/2 - 16, QFont::DemiBold )); // -10让字体变小一点, QFont::DemiBold为半粗体(权重是63)
+        p.drawText(rcBtn, "认 输", QTextOption(Qt::AlignCenter));
+        // 字体颜色恢复黑色，用于画线
+        p.setPen(QPen(Qt::black));
+
+        // 重新开始button
+        p.setPen(Qt::NoPen); // 不要画笔(没边框)
+        // 背景颜色：能悔棋是绿色，不能悔棋是灰色
+        p.setBrush(QBrush(QColor(Qt::darkGreen)));
+        rcBtn = QRect(QPoint(500, 400), QPoint(680, 460));
+        p.drawRoundRect(rcBtn, 20, 50);
+        // 字体颜色：能悔棋是白色，不能悔棋是黑色
+        p.setPen(QPen(Qt::white));
+        p.setFont(QFont("楷体", d/2 - 16, QFont::DemiBold )); // -10让字体变小一点, QFont::DemiBold为半粗体(权重是63)
+        p.drawText(rcBtn, "返回菜单", QTextOption(Qt::AlignCenter));
+        // 字体颜色恢复黑色，用于画线
+        p.setPen(QPen(Qt::black));
+
+        // y轴+50，还原Y轴
+        p.translate(QPoint(0, 50));
+    }
 
     // 画中间7条横线
     for(int i = 1; i < 9; ++i)
@@ -132,59 +208,77 @@ void Plate::paintEvent(QPaintEvent *event)
 // 点击事件
 void Plate::mouseReleaseEvent(QMouseEvent *event)
 {
-    // 悔棋
-    if(event->button() == Qt::RightButton)
-    {
-        if(listStep.isEmpty())
-            return;
-
-        // 回退两步
-        moveBack();
-        moveBack();
-
-        isWin = 0;
-
-        update();
-        return;
-    }
-
     // pt是像数值
     QPoint pt = event->pos();
-    pt -= off;
+    pt -= (off - QPoint(50, 0));
 
-    // 重新开始
-    if(pt.x() > 500 && pt.x() < 680 && pt.y() > 200 && pt.y() < 260)
+    if(gametype == Single)
     {
-        do{
+        //500, 300), QPoint(680, 360
+        if(pt.x() > 500 && pt.x() < 680 && pt.y() > 300 && pt.y() < 360)
+        {
+            gametype = Choose;
+
+            accept();
+        }
+
+        // 悔棋按钮
+        if(pt.x() > 500 && pt.x() < 680 && pt.y() > 100 && pt.y() < 160)
+        {
+            if(listStep.isEmpty() || isWin == 1)
+                return;
+
+            // 回退两步
+            moveBack();
+            moveBack();
+
+            isWin = 0;
+
+            update();
+            return;
+        }
+
+        // 重新开始
+        if(pt.x() > 500 && pt.x() < 680 && pt.y() > 200 && pt.y() < 260)
+        {
             QMessageBox box(QMessageBox::Question, "重新开始","确定重新对局吗？", QMessageBox::Ok | QMessageBox::Cancel, this);
             box.setButtonText (QMessageBox::Ok,QString("确 定"));
             box.setButtonText (QMessageBox::Cancel,QString("取 消"));
             int ret = box.exec ();
             //int ret = QMessageBox::question(this, "重新开始", "确定重新对局吗？", QMessageBox::Ok,QMessageBox::Cancel).setButtonText(QMessageBox::Ok, "确 定");
             if(ret != QMessageBox::Ok)
-                break;
+                return;
 
             initGame();
 
             update();
             return;
-        }while(0);
+        }
     }
-
-    // 悔棋按钮
-    if(pt.x() > 530 && pt.x() < 650 && pt.y() > 100 && pt.y() < 160)
+    else if(gametype == Server || gametype == Client)
     {
-        if(listStep.isEmpty())
+        if(pt.x() > 500 && pt.x() < 680 && pt.y() > 350 && pt.y() < 410)
+        {
+            gametype = Choose;
+
+            accept();
+        }
+
+        // 悔棋按钮
+        if(pt.x() > 500 && pt.x() < 680 && pt.y() > 50 && pt.y() < 110)
+        {
+            if(listStep.isEmpty() || isWin == 1)
+                return;
+
+            // 回退两步
+            moveBack();
+            moveBack();
+
+            isWin = 0;
+
+            update();
             return;
-
-        // 回退两步
-        moveBack();
-        moveBack();
-
-        isWin = 0;
-
-        update();
-        return;
+        }
     }
 
     // 失败或胜利，不能再点击棋子
@@ -213,6 +307,12 @@ void Plate::mouseReleaseEvent(QMouseEvent *event)
 
     int clickid = ps[row][col];
 
+    click(clickid, row, col);
+}
+
+// 处理点击
+void Plate::click(int clickid, int row, int col)
+{
     // 选中
     if(-1 == selectid)
     {
@@ -250,44 +350,17 @@ void Plate::mouseReleaseEvent(QMouseEvent *event)
         move(selectid, clickid, row, col);
     }
     update();
-
-    // 电脑走黑棋
-    QTimer::singleShot(10, [&](){
-        if(!redTure)
-        {
-            Step *step = ai->getNextStep();
-            if(isWin == 1)
-            {
-                delete step;
-                /*QMessageBox message(QMessageBox::NoIcon, "Title", "Content with icon.");
-                message.setIconPixmap(QPixmap("icon.png"));
-                message.exec();*/
-                QMessageBox::about(this, "胜利", "胜利      ");
-                return;
-            }
-            move(step->moveId, step->killId, step->targetRow, step->targetCol);
-            update();
-            if(isWin == -1)
-            {
-                /*QMessageBox message(QMessageBox::NoIcon, "Title", "Content with icon.");
-                message.setIconPixmap(QPixmap("icon.png"));
-                message.exec();*/
-                QMessageBox::about(this, "失败", "失败      ");
-                //QMessageBox::information(NULL, "失败", "失败");
-            }
-            delete step;
-        }
-    });
 }
 
 // 初始化棋子
+// isRed为true表示执红棋
 void Plate::initGame()
 {
     // 0表示没有获胜，1表示获胜，-1表示失败
     isWin = 0;
 
     // 局面分为0
-    ai->countValue = 0;
+    countValue = 0;
 
     redTure = true; // 默认红先走
 
@@ -329,6 +402,9 @@ void Plate::initGame()
             pieces[i].row = i > 15 ? 6 : 3;
             pieces[i].col = (j - 11)  * 2;
         }
+
+        if(!isRed)
+            pieces[i].rotate();
 
         // 记录有棋子的位置
         ps[pieces[i].row][pieces[i].col] = i;
@@ -435,7 +511,7 @@ bool Plate::canMove(int moveId, int killId, int targetRow, int targetCol)
             return false;
 
         // 是否过河
-        return pie->isBlack() == (targetRow < 5);
+        return (pie->isBlack() == isRed) == (targetRow < 5);
     }
     // 士的规则
     else if(pie->type == Mandarins)
@@ -452,7 +528,7 @@ bool Plate::canMove(int moveId, int killId, int targetRow, int targetCol)
             return false;
 
         // row是否出九宫格
-        if(pie->isBlack())
+        if(pie->isBlack() == isRed)
             return targetRow <= 2;
         else
             return targetRow >= 7;
@@ -495,7 +571,7 @@ bool Plate::canMove(int moveId, int killId, int targetRow, int targetCol)
             return false;
 
         // row是否出九宫格
-        if(pie->isBlack())
+        if(pie->isBlack() == isRed)
             return targetRow <= 2;
         else
             return targetRow >= 7;
@@ -519,7 +595,7 @@ bool Plate::canMove(int moveId, int killId, int targetRow, int targetCol)
         if(abs(rowDist) > 1 || abs(colDist) > 1)
             return false;
         // 红棋
-        if(pie->isBlack())
+        if(pie->isBlack() == isRed)
         {
             if(rowDist > 0)
                 return false;
@@ -626,10 +702,7 @@ void Plate::move(int moveId, int killId, int targetRow, int targetCol)
     if(killId != -1)
     {
         pieces[killId].killed = true;
-        if(pieces[killId].isBlack())
-            ai->countValue -= score[pieces[killId].type];
-        else
-            ai->countValue += score[pieces[killId].type];
+        AddUpValue(pieces[killId].isBlack(), score[pieces[killId].type]);
     }
 
     // 棋盘对应位置保存棋子id
@@ -669,10 +742,7 @@ void Plate::moveBack()
     {
         pieces[rec->killId].killed = false;
 
-        if(pieces[rec->killId].isBlack())
-            ai->countValue += score[pieces[rec->killId].type];
-        else
-            ai->countValue -= score[pieces[rec->killId].type];
+        AddUpValue(!pieces[rec->killId].isBlack(), score[pieces[rec->killId].type]);
     }
     ps[rec->targetRow][rec->targetCol] = rec->killId;
 
@@ -681,4 +751,10 @@ void Plate::moveBack()
 
     selectid = -1;
     redTure = !redTure;
+}
+
+// 对方统计分数
+void Plate::AddUpValue(bool isBack, int value)
+{
+
 }

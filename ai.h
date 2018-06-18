@@ -2,18 +2,14 @@
 #define AI_H
 
 #include <QList>
-#include "plate.h"
+#include "Plate.h"
 #include <QPair>
 #include <QMessageBox.h>
 
-class AI
+class AI : public Plate
 {
 public:
-    AI();
-
-    Plate *p;
-
-    int countValue;
+    AI(QWidget *parent = 0);
 
     // 电脑走的下一步棋
     Step *getNextStep();
@@ -32,6 +28,16 @@ public:
 
     // 添加步骤
     bool addSteps(int moveid, int targetRow, int targetCol, QList<Step*> &steps);
+
+    // 处理点击
+    virtual void click(int clickid, int row, int col);
+
+    // 移动棋子
+    void otherMove();
+
+    // 计分
+    virtual void AddUpValue(bool isBack, int value);
+
 };
 
 #endif // AI_H

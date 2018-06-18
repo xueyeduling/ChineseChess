@@ -11,22 +11,21 @@
 #include <QRect>
 #include <QMouseEvent>
 #include <QList>
-#include "piece.h"
+#include <QMessageBox>
+#include <qtimer.h>
+#include <QDialog>
+#include "Piece.h"
+#include "Step.h"
 
-class Step: public QObject
+enum GameType
 {
-public:
-    int moveId;
-    int killId;
-    int moveRow;
-    int moveCol;
-    int targetRow;
-    int targetCol;
+    Choose,
+    Single,
+    Server,
+    Client
 };
 
-class AI;
-
-class Plate : public QWidget
+class Plate : public QDialog
 {
     Q_OBJECT
 public:
@@ -35,10 +34,16 @@ public:
     void paintEvent(QPaintEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
 
+    GameType gametype;
+
     int selectid;
     int d;
     QPoint off;
+    bool isRed; // 是否执红棋
     bool redTure; // true红走，false黑走
+
+    // 对方局面总分
+    int countValue;
 
     Piece pieces[32];
 
@@ -49,8 +54,6 @@ public:
 
     // 走棋记录，用于悔棋
     QList<Step*> listStep;
-
-    AI * ai;
 
     int isWin;
 
@@ -71,6 +74,10 @@ public:
     void moveBack();
 
     void addStep(int moveId, int killId, int targetRow, int targetCol);
+
+    virtual void AddUpValue(bool isBack, int value);
+
+    virtual void click(int clickid, int row, int col);
 signals:
 
 public slots:

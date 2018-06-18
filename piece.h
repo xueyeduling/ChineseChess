@@ -29,11 +29,12 @@ public:
     bool isBlack()
     {
         return id < 16;
-        qDebug("id: %d",id);
-        throw;
     }
 
     void draw(QPainter &p, int d, int selectid);
+
+    // 旋转
+    void rotate();
 
 signals:
 
