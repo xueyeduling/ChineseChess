@@ -675,6 +675,13 @@ bool Plate::isMeet(int moveId, int targetCol)
     int row = pieces[4].row;
     int rowOther = pieces[20].row;
 
+    if(row>rowOther)
+    {
+        row += rowOther;
+        rowOther = row - rowOther;
+        row = row - rowOther;
+    }
+
     ++row;
     for(; row < rowOther; ++row)
         if(ps[row][col] != -1)
